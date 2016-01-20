@@ -1,7 +1,4 @@
-var data = [
-  { id: 1, content: 'content 1', status: true },
-  { id: 2, content: 'content 2', status: false }
-];
+var data = [];
 
 // props : object state from parent component
 // state : object state from current component
@@ -44,6 +41,11 @@ var TodoList = React.createClass({
     // re render component
     this.forceUpdate();
   },
+  handleTodoLoad: function(todos) {
+    this.setState({data: todos});
+
+    this.forceUpdate();
+  },
   render: function() {
     var self = this;
     
@@ -69,6 +71,7 @@ var TodoList = React.createClass({
           </tbody>
         </table>
         <TodoForm data={this.state.data} onTodoSubmit={this.handleTodoSubmit} />
+        <TodoFormExtra onTodoLoad={this.handleTodoLoad} data={this.state.data} />
       </div>
     );
   }
@@ -182,6 +185,53 @@ var TodoForm = React.createClass({
               </button>
           </div>
         </form>
+      </div>
+    );
+  }
+});
+
+var TodoFormExtra = React.createClass({
+  getInitialState: function() {
+    return { 
+      data: this.props.data
+    };
+  },
+  handleLoad: function(event) {
+    var ltodos = localStorage.getItem("todos");
+    if(ltodos == null) {
+      alert('Nothing in the localStorage !');
+      return;
+    }
+
+    this.props.onTodoLoad(JSON.parse(ltodos));
+  },
+  handleSave: function(event) {
+    localStorage.setItem("todos", JSON.stringify(this.state.data));
+  },
+  handleClear: function(event) {
+    localStorage.clear();
+  },
+  render: function() {
+    return (
+      <div className="TodoFormExtra">
+        <h2>Todos & LocalStorage</h2>
+        <div className="form-group">
+          <button 
+            onClick={this.handleLoad}
+            className="form-control btn btn-success">
+              Load from LocalStorage
+            </button>
+          <button 
+            onClick={this.handleSave}
+            className="form-control btn btn-danger">
+              Save in LocalStorage
+            </button>
+          <button 
+            onClick={this.handleClear}
+            className="form-control btn btn-warning">
+              Clear LocalStorage
+            </button>
+        </div>
       </div>
     );
   }
