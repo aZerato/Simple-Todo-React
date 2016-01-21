@@ -46,12 +46,47 @@ var TodoList = React.createClass({
 
     this.forceUpdate();
   },
+  handleTodoSave: function() {
+    localStorage.setItem("todos", JSON.stringify(this.state.data));
+  },
+  handleTodoContentStatus: function(id, value)
+  {
+    var items = this.state.data;
+
+    items = items.filter(function(cur) {
+      if (cur.id == id)
+      {
+        cur.content = value;
+      }
+
+      return cur;
+    });
+
+    // update todo
+    this.setState({data: items});
+  },
+  handleTodoUpdateStatus: function(id, value)
+  {
+    var items = this.state.data;
+
+    items = items.filter(function(cur) {
+      if (cur.id == id)
+      {
+        cur.status = value;
+      }
+
+      return cur;
+    });
+
+    // update todo
+    this.setState({data: items});
+  },
   render: function() {
     var self = this;
     
     var todoNodes = this.state.data.map(function(todo, i) {
       return (
-        <Todo key={todo.id} id={todo.id} content={todo.content} status={todo.status} onTodoRemove={self.handleRemoveClick}></Todo>
+        <Todo key={todo.id} id={todo.id} onContentUpdate={self.handleTodoContentStatus} content={todo.content} onUpdateStatus={self.handleTodoUpdateStatus} status={todo.status} onTodoRemove={self.handleRemoveClick}></Todo>
       );
     });
 
@@ -71,7 +106,7 @@ var TodoList = React.createClass({
           </tbody>
         </table>
         <TodoForm data={this.state.data} onTodoSubmit={this.handleTodoSubmit} />
-        <TodoFormExtra onTodoLoad={this.handleTodoLoad} data={this.state.data} />
+        <TodoFormExtra onTodoLoad={this.handleTodoLoad} onTodoSave={this.handleTodoSave} data={this.state.data} />
       </div>
     );
   }
@@ -94,14 +129,22 @@ var Todo = React.createClass({
     });
   },
   handleContentChange: function(event) {
+    var value = event.target.value;
+
     this.setState({
       content: event.target.value
     });
+
+    this.props.onContentUpdate(this.state.id, value);
   },
   handleStatusChange: function(event) {
+    var value = event.target.checked;
+
     this.setState({
-      status: event.target.checked
+      status: value
     });
+
+    this.props.onUpdateStatus(this.state.id, value);
   },
   handleRemoveButton: function(event) {
     this.props.onTodoRemove(this.state);
@@ -158,7 +201,7 @@ var TodoForm = React.createClass({
       status: false
     };
 
-    // reinit value of input
+    // re init value of input
     this.setState({content: ''});
 
     // use function from TodoList component
@@ -206,7 +249,7 @@ var TodoFormExtra = React.createClass({
     this.props.onTodoLoad(JSON.parse(ltodos));
   },
   handleSave: function(event) {
-    localStorage.setItem("todos", JSON.stringify(this.state.data));
+    this.props.onTodoSave();
   },
   handleClear: function(event) {
     localStorage.clear();
